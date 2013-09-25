@@ -12,6 +12,42 @@ import java.util.LinkedList;
 
 final public class NeoMLParser {
 
+  enum OperAssociativity {
+    LEFT,
+    RIGHT,
+    NOASSOC
+  };
+
+  enum Operator {
+    OR      (0, OperAssociativity.LEFT),
+    AND     (1, OperAssociativity.LEFT),
+
+    LT      (2, OperAssociativity.NOASSOC),
+    GT      (2, OperAssociativity.NOASSOC),
+    LEQ     (2, OperAssociativity.NOASSOC),
+    GEQ     (2, OperAssociativity.NOASSOC),
+    EQ      (2, OperAssociativity.NOASSOC),
+    NEQ     (2, OperAssociativity.NOASSOC),
+
+    PLUS    (3, OperAssociativity.LEFT),
+    MINUS   (3, OperAssociativity.LEFT),
+    TIMES   (4, OperAssociativity.LEFT),
+    DIVIDE  (4, OperAssociativity.LEFT),
+    REM     (4, OperAssociativity.LEFT),
+    XOR     (5, OperAssociativity.LEFT);
+
+    final private int m_precedence;
+    final private OperAssociativity m_associativity;
+
+    private Operator(final int precedence, final OperAssociativity associativity) {
+      m_precedence = precedence;
+      m_associativity = associativity;
+    }
+
+    public int getPrecedence() { return m_precedence; }
+    public OperAssociativity getAssociativity() { return m_associativity; }
+  };
+
   public class NeoMLType {}
   final static public class TypedVar {
     static TypedVar create(String name, NeoMLType typ) {
@@ -22,7 +58,7 @@ final public class NeoMLParser {
   public NeoMLType makeIntType() { return new NeoMLType(); }
   public NeoMLType makeBoolType() { return new NeoMLType(); }
 
-  public class ExprAst {};
+  static public class ExprAst {};
 
   final static public class IntLit extends ExprAst {
     public static IntLit create(String intStr) {
@@ -43,12 +79,12 @@ final public class NeoMLParser {
   };
 
   final static public class BinOper extends ExprAst {
-    public static BinOper create(ExprAst t1, String oper, ExprAst t2) {
+    public static BinOper create(ExprAst t1, Operator oper, ExprAst t2) {
       return null;
     }
   };
 
-  public class Def {};
+  static public class Def {};
 
   final static public class FunDef extends Def
   {
@@ -62,55 +98,6 @@ final public class NeoMLParser {
       return null;
     }
   };
-
-  enum OperAssociativity {
-    LEFT,
-    RIGHT,
-    NOASSOC
-  };
-
-  enum ////////////////////////////////////////////////////////
-
-
-  final static class OperInfo {
-    public static OperInfo create(int precedence, OperAssociativity associativity) {
-      return new OperInfo(precedence, associativity);
-    }
-
-    public int getPrecedence() { return m_precedence; }
-    public OperAssociativity getAssociativity() { return m_associativity; }
-
-    private OperInfo(int precedence, OperAssociativity associativity)
-    {
-      m_precedence = precedence;
-      m_associativity = associativity;
-    }
-
-    private int m_precedence;
-    private OperAssociativity m_associativity;
-  };
-
-  final static Map<String, OperInfo> precedenceOperMap;
-  static {
-    precedenceOperMap = new HashMap<String, OperInfo>();
-
-    precedenceOperMap.put("||", OperInfo.create(0, OperAssociativity.LEFT));
-    precedenceOperMap.put("&&", OperInfo.create(1, OperAssociativity.LEFT));
-
-    precedenceOperMap.put("<", OperInfo.create(2, OperAssociativity.NOASSOC));
-    precedenceOperMap.put(">", OperInfo.create(2, OperAssociativity.NOASSOC));
-    precedenceOperMap.put("<=", OperInfo.create(2, OperAssociativity.NOASSOC));
-    precedenceOperMap.put(">=", OperInfo.create(2, OperAssociativity.NOASSOC));
-    precedenceOperMap.put("==", OperInfo.create(2, OperAssociativity.NOASSOC));
-    precedenceOperMap.put("!=", OperInfo.create(2, OperAssociativity.NOASSOC));
-
-    precedenceOperMap.put("+",  OperInfo.create(3, OperAssociativity.LEFT));
-    precedenceOperMap.put("-",  OperInfo.create(3, OperAssociativity.LEFT));
-    precedenceOperMap.put("*",  OperInfo.create(4, OperAssociativity.LEFT));
-    precedenceOperMap.put("/",  OperInfo.create(4, OperAssociativity.LEFT));
-    precedenceOperMap.put("%",  OperInfo.create(4, OperAssociativity.LEFT));
-    precedenceOperMap.put("^",  OperInfo.create(5, OperAssociativity.LEFT));
-  }
 
   public static void main(String args[]) {
     NeoMLParser parser;
@@ -364,19 +351,18 @@ NeoMLType Type() :
 ExprAst Expr(int p) :
 {
   ExprAst t1, t2;
-  String oper;
-  int q;
+  Operator oper;
+  int q = 0; // Just to get rid of javac warnings.
 }
 {
   (t1 = P()
-   (oper = BinaryOperator() { { OperInfo operInfo = precedenceOperMap.get(oper);
-                                int prec = operInfo.getPrecedence();
+   (oper = BinaryOperator() { { final int prec = oper.getPrecedence();
                                 if (prec < p) {
                                   return t1;
                                 }
                                 else
                                 {
-                                  switch (operInfo.getAssociativity())
+                                  switch (oper.getAssociativity())
                                   {
                                   case LEFT:
                                   {
@@ -422,7 +408,7 @@ ExprAst Literal() :
 ExprAst IntegerLiteral() :
 {}
 {
-  <INTEGER_LITERAL> { IntLit.create(token.image); }
+  <INTEGER_LITERAL> { return IntLit.create(token.image); }
 }
 
 ExprAst BooleanLiteral() :
@@ -432,21 +418,23 @@ ExprAst BooleanLiteral() :
 | <FALSE> { return BoolLit.create(false); }
 }
 
-String BinaryOperator() :
+Operator BinaryOperator() :
 {}
 {
-  <SC_OR> { return ; }
-| <SC_AND>
-| <PLUS>
-| <MINUS>
-| <TIMES>
-| <DIVIDE>
-| <REM>
-| <XOR>
-| <LT>
-| <GT>
-| <LEQ>
-| <GEQ>
-| <EQ>
-| <NEQ> { return token.image; }
+  <SC_OR>  { return Operator.OR; }
+| <SC_AND> { return Operator.AND; }
+
+| <LT>     { return Operator.LT; }
+| <GT>     { return Operator.GT; }
+| <LEQ>    { return Operator.LEQ; }
+| <GEQ>    { return Operator.GEQ; }
+| <EQ>     { return Operator.EQ; }
+| <NEQ>    { return Operator.NEQ; }
+
+| <PLUS>   { return Operator.PLUS; }
+| <MINUS>  { return Operator.MINUS; }
+| <TIMES>  { return Operator.TIMES; }
+| <DIVIDE> { return Operator.DIVIDE; }
+| <REM>    { return Operator.REM; }
+| <XOR>    { return Operator.XOR; }
 }
