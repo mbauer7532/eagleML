@@ -5,20 +5,18 @@ options {
 
 PARSER_BEGIN(EagleMLParser)
 
-import java.util.Map;
 import java.util.List;
-import java.util.HashMap;
 import java.util.LinkedList;
 
 final public class EagleMLParser {
 
-  enum OperAssociativity {
+  public enum OperAssociativity {
     LEFT,
     RIGHT,
     NOASSOC
   };
 
-  enum Operator {
+  public enum Operator {
     OR      (0, OperAssociativity.LEFT),
     AND     (1, OperAssociativity.LEFT),
 
@@ -338,10 +336,13 @@ TypedVar FormalParameter() :
 }
 
 NeoMLType Type() :
-{}
 {
-  <INT>       { return makeIntType(); }
-  | <BOOLEAN> { return makeBoolType(); }
+  NeoMLType typ;
+}
+{
+  (<INT>       { typ = makeIntType(); }
+   | <BOOLEAN> { typ = makeBoolType(); })
+  { return typ; }
 }
 
 /*
@@ -390,9 +391,10 @@ ExprAst P() :
   ExprAst t;
 }
 {
-  <LPAREN> t = Expr(0) <RPAREN> { return t; }
-| t = Literal()                 { return t; }
-| <IDENTIFIER>                  { return VarRef.create(token.image); }
+  (<LPAREN> t = Expr(0) <RPAREN>
+   | t = Literal()
+   | <IDENTIFIER> { t = VarRef.create(token.image); })
+ { return t; }
 }
 
 ExprAst Literal() :
@@ -400,9 +402,9 @@ ExprAst Literal() :
   ExprAst expr;
 }
 {
-  expr = IntegerLiteral() { return expr; }
-|
-  expr = BooleanLiteral() { return expr; }
+  (expr = IntegerLiteral()
+   | expr = BooleanLiteral())
+ { return expr; }
 }
 
 ExprAst IntegerLiteral() :
@@ -412,29 +414,35 @@ ExprAst IntegerLiteral() :
 }
 
 ExprAst BooleanLiteral() :
-{}
 {
-  <TRUE>  { return BoolLit.create(true); }
-| <FALSE> { return BoolLit.create(false); }
+  ExprAst boolLit;
+}
+{
+  (<TRUE>  { boolLit = BoolLit.create(true); }
+   | <FALSE> { boolLit = BoolLit.create(false); })
+ { return boolLit; }
 }
 
 Operator BinaryOperator() :
-{}
 {
-  <SC_OR>  { return Operator.OR; }
-| <SC_AND> { return Operator.AND; }
+  Operator oper;
+}
+{
+  (<SC_OR>  { oper = Operator.OR; }
+   | <SC_AND> { oper = Operator.AND; }
 
-| <LT>     { return Operator.LT; }
-| <GT>     { return Operator.GT; }
-| <LEQ>    { return Operator.LEQ; }
-| <GEQ>    { return Operator.GEQ; }
-| <EQ>     { return Operator.EQ; }
-| <NEQ>    { return Operator.NEQ; }
+   | <LT>     { oper = Operator.LT; }
+   | <GT>     { oper = Operator.GT; }
+   | <LEQ>    { oper = Operator.LEQ; }
+   | <GEQ>    { oper = Operator.GEQ; }
+   | <EQ>     { oper = Operator.EQ; }
+   | <NEQ>    { oper = Operator.NEQ; }
 
-| <PLUS>   { return Operator.PLUS; }
-| <MINUS>  { return Operator.MINUS; }
-| <TIMES>  { return Operator.TIMES; }
-| <DIVIDE> { return Operator.DIVIDE; }
-| <REM>    { return Operator.REM; }
-| <XOR>    { return Operator.XOR; }
+   | <PLUS>   { oper = Operator.PLUS; }
+   | <MINUS>  { oper = Operator.MINUS; }
+   | <TIMES>  { oper = Operator.TIMES; }
+   | <DIVIDE> { oper = Operator.DIVIDE; }
+   | <REM>    { oper = Operator.REM; }
+   | <XOR>    { oper = Operator.XOR; })
+  { return oper; }
 }
