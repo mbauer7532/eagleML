@@ -3,14 +3,14 @@ options {
   STATIC = false;
 }
 
-PARSER_BEGIN(NeoMLParser)
+PARSER_BEGIN(EagleMLParser)
 
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-final public class NeoMLParser {
+final public class EagleMLParser {
 
   enum OperAssociativity {
     LEFT,
@@ -100,23 +100,23 @@ final public class NeoMLParser {
   };
 
   public static void main(String args[]) {
-    NeoMLParser parser;
+    EagleMLParser parser;
     if (args.length == 0) {
       System.out.println("Java Parser Version 1.0.2:  Reading from standard input . . .");
-      parser = new NeoMLParser(System.in);
+      parser = new EagleMLParser(System.in);
     } else if (args.length == 1) {
       System.out.println("Java Parser Version 1.0.2:  Reading from file " + args[0] + " . . .");
       try {
-        parser = new NeoMLParser(new java.io.FileInputStream(args[0]));
+        parser = new EagleMLParser(new java.io.FileInputStream(args[0]));
       } catch (java.io.FileNotFoundException e) {
         System.out.println("Java Parser Version 1.0.2:  File " + args[0] + " not found.");
         return;
       }
     } else {
       System.out.println("Java Parser Version 1.0.2:  Usage is one of:");
-      System.out.println("         java NeoMLParser < inputfile");
+      System.out.println("         java EagleMLParser < inputfile");
       System.out.println("OR");
-      System.out.println("         java NeoMLParser inputfile");
+      System.out.println("         java EagleMLParser inputfile");
       return;
     }
     try {
@@ -129,7 +129,7 @@ final public class NeoMLParser {
 
 }
 
-PARSER_END(NeoMLParser)
+PARSER_END(EagleMLParser)
 
 
 SKIP : /* WHITE SPACE */
