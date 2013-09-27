@@ -5,127 +5,14 @@ options {
 
 PARSER_BEGIN(EagleMLParser)
 
+package eagleml;
+
 import java.util.List;
 import java.util.LinkedList;
+import eagleml.EagleMLAst.*;
+import static eagleml.EagleMLAst.*;
 
-final public class EagleMLParser {
-
-  public enum OperAssociativity {
-    LEFT,
-    RIGHT,
-    NOASSOC
-  };
-
-  public enum Operator {
-    OR      (0, OperAssociativity.LEFT),
-    AND     (1, OperAssociativity.LEFT),
-
-    LT      (2, OperAssociativity.NOASSOC),
-    GT      (2, OperAssociativity.NOASSOC),
-    LEQ     (2, OperAssociativity.NOASSOC),
-    GEQ     (2, OperAssociativity.NOASSOC),
-    EQ      (2, OperAssociativity.NOASSOC),
-    NEQ     (2, OperAssociativity.NOASSOC),
-
-    PLUS    (3, OperAssociativity.LEFT),
-    MINUS   (3, OperAssociativity.LEFT),
-    TIMES   (4, OperAssociativity.LEFT),
-    DIVIDE  (4, OperAssociativity.LEFT),
-    REM     (4, OperAssociativity.LEFT),
-    XOR     (5, OperAssociativity.LEFT);
-
-    final private int m_precedence;
-    final private OperAssociativity m_associativity;
-
-    private Operator(final int precedence, final OperAssociativity associativity) {
-      m_precedence = precedence;
-      m_associativity = associativity;
-    }
-
-    public int getPrecedence() { return m_precedence; }
-    public OperAssociativity getAssociativity() { return m_associativity; }
-  };
-
-  public class NeoMLType {}
-  final static public class TypedVar {
-    static TypedVar create(String name, NeoMLType typ) {
-      return new TypedVar();
-    }
-  }
-
-  public NeoMLType makeIntType() { return new NeoMLType(); }
-  public NeoMLType makeBoolType() { return new NeoMLType(); }
-
-  static public class ExprAst {};
-
-  final static public class IntLit extends ExprAst {
-    public static IntLit create(String intStr) {
-      return null;
-    }
-  };
-
-  final static public class BoolLit extends ExprAst {
-    public static BoolLit create(boolean b) {
-      return null;
-    }
-  };
-
-  final static public class VarRef extends ExprAst {
-    public static VarRef create(String varName) {
-      return null;
-    }
-  };
-
-  final static public class BinOper extends ExprAst {
-    public static BinOper create(ExprAst t1, Operator oper, ExprAst t2) {
-      return null;
-    }
-  };
-
-  static public class Def {};
-
-  final static public class FunDef extends Def
-  {
-    static FunDef create(String funName, List<TypedVar> tyVars, NeoMLType funType, ExprAst expr) {
-      return new FunDef();
-    }
-  };
-
-  final static public class VarDef extends Def {
-    static VarDef create() {
-      return null;
-    }
-  };
-
-  public static void main(String args[]) {
-    EagleMLParser parser;
-    if (args.length == 0) {
-      System.out.println("Java Parser Version 1.0.2:  Reading from standard input . . .");
-      parser = new EagleMLParser(System.in);
-    } else if (args.length == 1) {
-      System.out.println("Java Parser Version 1.0.2:  Reading from file " + args[0] + " . . .");
-      try {
-        parser = new EagleMLParser(new java.io.FileInputStream(args[0]));
-      } catch (java.io.FileNotFoundException e) {
-        System.out.println("Java Parser Version 1.0.2:  File " + args[0] + " not found.");
-        return;
-      }
-    } else {
-      System.out.println("Java Parser Version 1.0.2:  Usage is one of:");
-      System.out.println("         java EagleMLParser < inputfile");
-      System.out.println("OR");
-      System.out.println("         java EagleMLParser inputfile");
-      return;
-    }
-    try {
-      parser.CompilationUnit();
-      System.out.println("Java Parser Version 1.0.2:  Java program parsed successfully.");
-    } catch (ParseException e) {
-      System.out.println("Java Parser Version 1.0.2:  Encountered errors during parse.");
-    }
-  }
-
-}
+final public class EagleMLParser {}
 
 PARSER_END(EagleMLParser)
 
@@ -302,7 +189,7 @@ FunDef FunctionDefinition() :
    String funName;
    List<TypedVar> tyVars;
    ExprAst expr;
-   NeoMLType funType = null;
+   EagleMLType funType = null;
 }
 {
     <DEF>
@@ -328,16 +215,16 @@ List<TypedVar> FunArgs() :
 
 TypedVar FormalParameter() :
 {
-  NeoMLType typ;
+  EagleMLType typ;
   String name;
 }
 {
   (typ = Type() <IDENTIFIER> { name = token.image; }) { return TypedVar.create(name, typ); }
 }
 
-NeoMLType Type() :
+EagleMLType Type() :
 {
-  NeoMLType typ;
+  EagleMLType typ;
 }
 {
   (<INT>       { typ = makeIntType(); }
@@ -357,7 +244,7 @@ ExprAst Expr(int p) :
 }
 {
   (t1 = P()
-   (oper = BinaryOperator() { { final int prec = oper.getPrecedence();
+   (LOOKAHEAD(1) oper = BinaryOperator() { { final int prec = oper.getPrecedence();
                                 if (prec < p) {
                                   return t1;
                                 }
