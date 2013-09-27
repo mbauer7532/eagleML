@@ -18,58 +18,38 @@ final public class EagleMLAst {
   };
 
   static public enum Operator {
-    OR      (0, OperAssociativity.LEFT),
-    AND     (1, OperAssociativity.LEFT),
+    OR      (0, OperAssociativity.LEFT,    "||"),
+    AND     (1, OperAssociativity.LEFT,    "&&"),
 
-    LT      (2, OperAssociativity.NOASSOC),
-    GT      (2, OperAssociativity.NOASSOC),
-    LEQ     (2, OperAssociativity.NOASSOC),
-    GEQ     (2, OperAssociativity.NOASSOC),
-    EQ      (2, OperAssociativity.NOASSOC),
-    NEQ     (2, OperAssociativity.NOASSOC),
+    LT      (2, OperAssociativity.NOASSOC, "<"),
+    GT      (2, OperAssociativity.NOASSOC, ">"),
+    LEQ     (2, OperAssociativity.NOASSOC, "<="),
+    GEQ     (2, OperAssociativity.NOASSOC, ">="),
+    EQ      (2, OperAssociativity.NOASSOC, "=="),
+    NEQ     (2, OperAssociativity.NOASSOC, "!="),
 
-    PLUS    (3, OperAssociativity.LEFT),
-    MINUS   (3, OperAssociativity.LEFT),
-    TIMES   (4, OperAssociativity.LEFT),
-    DIVIDE  (4, OperAssociativity.LEFT),
-    REM     (4, OperAssociativity.LEFT),
-    XOR     (5, OperAssociativity.LEFT);
+    PLUS    (3, OperAssociativity.LEFT,    "+"),
+    MINUS   (3, OperAssociativity.LEFT,    "-"),
+    TIMES   (4, OperAssociativity.LEFT,    "*"),
+    DIVIDE  (4, OperAssociativity.LEFT,    "/"),
+    REM     (4, OperAssociativity.LEFT,    "%"),
+    XOR     (5, OperAssociativity.LEFT,    "^");
 
     final private int m_precedence;
     final private OperAssociativity m_associativity;
+    final String m_name;
 
-    private Operator(final int precedence, final OperAssociativity associativity) {
+    private Operator(final int precedence, final OperAssociativity associativity, String name) {
       m_precedence = precedence;
       m_associativity = associativity;
+      m_name = name;
     }
 
     public int getPrecedence() { return m_precedence; }
     public OperAssociativity getAssociativity() { return m_associativity; }
 
     @Override
-    final public String toString()
-    {
-      switch (this)
-      {
-      case OR:     return "||";
-      case AND:    return "&&";
-
-      case LT:     return "<";
-      case GT:     return ">";
-      case LEQ:    return "<=";
-      case GEQ:    return ">=";
-      case EQ:     return "==";
-      case NEQ:    return "!=";
-
-      case PLUS:   return "+";
-      case MINUS:  return "-";
-      case TIMES:  return "*";
-      case DIVIDE: return "/";
-      case REM:    return "%";
-      case XOR:    return "^";
-      }
-      }
-    }
+    final public String toString() { return m_name; }
   };
 
   static public class EagleMLType {}
