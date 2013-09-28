@@ -9,13 +9,54 @@ package eagleml;
 
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Deque;
+import java.util.ArrayDeque;
 import eagleml.EagleMLAst.*;
 import static eagleml.EagleMLAst.*;
 
-final public class EagleMLParser {}
+final public class EagleMLParser {
+  public void initExpressionStacks() {
+    m_operators = new ArrayDeque<Operator>();
+    m_operands  = new ArrayDeque<ExprAst>();
+
+    return;
+  }
+
+  private void popOperator() {
+    final Operator oper = m_operators.pop();
+
+    if (oper.isBinary()) {
+      final ExprAst t1 = m_operands.pop();
+      final ExprAst t0 = m_operands.pop();
+
+      m_operands.push(BinOper.create(t0, oper, t1));
+    }
+    else if (oper.isUnary()) {
+      final ExprAst t0 = m_operands.pop();
+      m_operands.push(UnaryOper.create(oper, t0));
+    }
+    else
+    {
+      throw new RuntimeException("Bad operator.");
+    }
+
+    return;
+  }
+
+  private void pushOperator(final Operator oper) {
+    while (m_operators.peek().greaterPrecedence(oper)) {
+      popOperator();
+    }
+    m_operators.push(oper);
+
+    return;
+  }
+
+  private Deque<Operator> m_operators;
+  private Deque<ExprAst> m_operands;
+}
 
 PARSER_END(EagleMLParser)
-
 
 SKIP : /* WHITE SPACE */
 {
@@ -199,7 +240,7 @@ FunDef FunctionDefinition() :
     <RPAREN>
     [funType = Type()]
     <ASSIGN>
-   (expr = Expr(0)) { return FunDef.create(funName, tyVars, funType, expr); }
+   (expr = Expr()) { return FunDef.create(funName, tyVars, funType, expr); }
 }
 
 List<TypedVar> FunArgs() :
@@ -236,52 +277,55 @@ EagleMLType Type() :
  * Expression syntax follows.
  */
 
-ExprAst Expr(int p) :
+ExprAst Expr() :
+{}
 {
-  ExprAst t1, t2;
-  Operator oper;
-  int q = 0; // Just to get rid of javac warnings.
-}
-{
-  (t1 = P()
-   (LOOKAHEAD(1) oper = BinaryOperator() { { final int prec = oper.getPrecedence();
-                                if (prec < p) {
-                                  return t1;
-                                }
-                                else
-                                {
-                                  switch (oper.getAssociativity())
-                                  {
-                                  case LEFT:
-                                  {
-                                    q = prec + 1;
-                                    break;
-                                  }
-                                  case RIGHT:
-                                  {
-                                    q = prec;
-                                    break;
-                                  }
-                                  case NOASSOC:
-                                  { // For now -- the error is detected later during typechecking
-                                    q = prec + 1;
-                                    break;
-                                  }
-                                  }
-                                } } }
-     t2 = Expr(q) { t1 =  BinOper.create( t1, oper, t2); })*)
-  { return t1; }
+  { m_operators.push(Operator.NO_OPPER); }
+  ExprAstAux()
+  {
+    ExprAst res = m_operands.pop();
+    m_operators.pop(); // Get rid of the sentinel.
+
+    assert m_operands.size() == 0: "The expression operands array was not empty at the end of an expression parse.";
+    assert m_operators.size() == 0: "The expression operators array was not empty at the end of an expression parse.";
+
+    return res;
+  }
 }
 
-ExprAst P() :
+void ExprAstAux() :
 {
-  ExprAst t;
+  Operator oper;
 }
 {
-  (<LPAREN> t = Expr(0) <RPAREN>
-   | t = Literal()
-   | <IDENTIFIER> { t = VarRef.create(token.image); })
- { return t; }
+  (P()
+   (oper = BinaryOperator() { pushOperator(oper); } P())*)
+  {
+    while (! m_operators.peek().isNoOper())
+    {
+      popOperator();
+    }
+  }
+}
+
+void P() :
+{
+  ExprAst t;
+  Operator unary;
+}
+{
+  <LPAREN> { m_operators.push(Operator.NO_OPPER); }
+  Expr()
+  <RPAREN> { m_operators.pop(); }
+  | t = Literal()
+    {
+      m_operands.push(t);
+    }
+  | <IDENTIFIER>
+    {
+      m_operands.push(VarRef.create(token.image));
+    }
+  | unary = UnaryOperator() { m_operators.push(unary); } P()
 }
 
 ExprAst Literal() :
@@ -297,7 +341,7 @@ ExprAst Literal() :
 ExprAst IntegerLiteral() :
 {}
 {
-  <INTEGER_LITERAL> { return IntLit.create(token.image); }
+  <INTEGER_LITERAL> { return IntLit.create(Integer.parseInt(token.image)); }
 }
 
 ExprAst BooleanLiteral() :
@@ -331,5 +375,19 @@ Operator BinaryOperator() :
    | <DIVIDE> { oper = Operator.DIVIDE; }
    | <REM>    { oper = Operator.REM; }
    | <XOR>    { oper = Operator.XOR; })
-  { return oper; }
+  {
+    return oper;
+  }
+}
+
+Operator UnaryOperator() :
+{
+  Operator oper;
+}
+{
+  (<PLUS>  { oper = Operator.UPLUS; }
+   | <MINUS> { oper = Operator.UMINUS; })
+  {
+    return oper;
+  }
 }
