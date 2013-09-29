@@ -8,7 +8,7 @@ PARSER_BEGIN(EagleMLParser)
 package eagleml;
 
 import java.util.List;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.ArrayDeque;
 import eagleml.EagleMLAst.*;
@@ -81,8 +81,10 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < TRUE: "true" >
 | < FALSE: "false" >
 | < IF: "if" >
+| < THEN: "then" >
 | < ELSE: "else" >
 | < DEF: "def" >
+| < VAL: "val" >
 | < LET: "let" >
 | < IN: "in" >
 | < END: "end" >
@@ -193,8 +195,8 @@ TOKEN : /* OPERATORS */
 | < NEQ:                  "!=" >
 | < LEQ:                  "<=" >
 | < GEQ:                  ">=" >
-| < SC_OR:                "||" >
-| < SC_AND:               "&&" >
+| < OR:                   "||" >
+| < AND:                  "&&" >
 | < PLUS:                 "+" >
 | < MINUS:                "-" >
 | < TIMES:                "*" >
@@ -208,9 +210,9 @@ TOKEN : /* OPERATORS */
 | < RIGHT_UNSIGNED_SHIFT: ">>>" >
 }
 
-/*****************************************
- * THE NEO LANGUAGE GRAMMAR STARTS HERE *
- *****************************************/
+/********************************************
+ * THE EagleML LANGUAGE GRAMMAR STARTS HERE *
+ ********************************************/
 
 /*
  * Program structuring syntax follows.
@@ -218,11 +220,38 @@ TOKEN : /* OPERATORS */
 
 List<Def> CompilationUnit() :
 {
-  List<Def> defList = new LinkedList<Def>();
-  FunDef def;
+  List<Def> defList = new ArrayList<Def>();
 }
 {
-  (def = FunctionDefinition() { defList.add(def); } )+ <EOF> { return defList; }
+  defList = CompilationUnitAux() <EOF>
+  {
+    return defList;
+  }
+}
+
+List<Def> CompilationUnitAux() :
+{
+  List<Def> defList = new ArrayList<Def>();
+  Def def;
+}
+{
+  ((def = VariableDefinition() | def = FunctionDefinition()) { defList.add(def); } )+
+  {
+    return defList;
+  }
+}
+
+VarDef VariableDefinition() :
+{
+  String varName;
+  EagleMLType varTyp;
+  ExprAst expr;
+}
+{
+  <VAL> <IDENTIFIER> { varName = token.image; } <COLON> varTyp = Type() <ASSIGN> expr = Expr()
+  {
+    return VarDef.create(varName, varTyp, expr);
+  }
 }
 
 FunDef FunctionDefinition() :
@@ -236,17 +265,21 @@ FunDef FunctionDefinition() :
     <DEF>
     <IDENTIFIER> { funName = token.image; }
     <LPAREN>
-    (tyVars = FunArgs())
+    tyVars = FunArgs()
     <RPAREN>
-    [funType = Type()]
+    <COLON>
+    funType = Type()
     <ASSIGN>
-   (expr = Expr()) { return FunDef.create(funName, tyVars, funType, expr); }
+    expr = Expr()
+    {
+      return FunDef.create(funName, tyVars, funType, expr);
+    }
 }
 
 List<TypedVar> FunArgs() :
 {
   TypedVar typedVar;
-  List<TypedVar> typedVars = new LinkedList<TypedVar>();
+  List<TypedVar> typedVars = new ArrayList<TypedVar>();
 }
 {
   [ typedVar = FormalParameter() { typedVars.add(typedVar); }
@@ -260,7 +293,7 @@ TypedVar FormalParameter() :
   String name;
 }
 {
-  (typ = Type() <IDENTIFIER> { name = token.image; }) { return TypedVar.create(name, typ); }
+  (<IDENTIFIER> { name = token.image; } <COLON> typ = Type()) { return TypedVar.create(name, typ); }
 }
 
 EagleMLType Type() :
@@ -268,8 +301,8 @@ EagleMLType Type() :
   EagleMLType typ;
 }
 {
-  (<INT>       { typ = makeIntType(); }
-   | <BOOLEAN> { typ = makeBoolType(); })
+  (<INT>       { typ = IntPrimitiveType.create(); }
+   | <BOOLEAN> { typ = BoolPrimitiveType.create(); })
   { return typ; }
 }
 
@@ -278,16 +311,27 @@ EagleMLType Type() :
  */
 
 ExprAst Expr() :
-{}
 {
-  { m_operators.push(Operator.NO_OPPER); }
+  int operatorStackSize, operandStackSize;
+}
+{
+  {
+    operatorStackSize = m_operators.size(); // Only used in the assert below.
+    operandStackSize  = m_operands.size();  // Only used in the assert below.
+
+    m_operators.push(Operator.NO_OPPER);
+  }
   ExprAstAux()
   {
-    ExprAst res = m_operands.pop();
-    m_operators.pop(); // Get rid of the sentinel.
+    final ExprAst res = m_operands.pop();
+    final Operator oper = m_operators.pop(); // Get rid of the sentinel.
 
-    assert m_operands.size() == 0: "The expression operands array was not empty at the end of an expression parse.";
-    assert m_operators.size() == 0: "The expression operators array was not empty at the end of an expression parse.";
+    assert oper == Operator.NO_OPPER:
+           "Sentinel operator was expected but was not found.";
+    assert m_operators.size() == operatorStackSize:
+           "The expression operands array was not empty at the end of an expression parse.";
+    assert m_operands.size() == operandStackSize:
+           "The expression operators array was not empty at the end of an expression parse.";
 
     return res;
   }
@@ -299,7 +343,7 @@ void ExprAstAux() :
 }
 {
   (P()
-   (oper = BinaryOperator() { pushOperator(oper); } P())*)
+   (LOOKAHEAD(1) oper = BinaryOperator() { pushOperator(oper); } P())*)
   {
     while (! m_operators.peek().isNoOper())
     {
@@ -310,48 +354,50 @@ void ExprAstAux() :
 
 void P() :
 {
-  ExprAst t;
   Operator unary;
+  ExprAst condExpr, thenExpr, elseExpr;
+  List<Def> letBindings;
+  ExprAst letExpr;
 }
 {
-  <LPAREN> { m_operators.push(Operator.NO_OPPER); }
+  <LPAREN>
+  {
+    m_operators.push(Operator.NO_OPPER);
+  }
   Expr()
-  <RPAREN> { m_operators.pop(); }
-  | t = Literal()
+  <RPAREN>
+  {
+    m_operators.pop();
+  }
+  | <INTEGER_LITERAL>
     {
-      m_operands.push(t);
+      m_operands.push(IntLit.create(Integer.parseInt(token.image)));
     }
+  | <TRUE>
+     {
+       m_operands.push(BoolLit.create(true));
+     }
+  | <FALSE>
+     {
+       m_operands.push(BoolLit.create(false));
+     }
   | <IDENTIFIER>
     {
       m_operands.push(VarRef.create(token.image));
     }
-  | unary = UnaryOperator() { m_operators.push(unary); } P()
-}
-
-ExprAst Literal() :
-{
-  ExprAst expr;
-}
-{
-  (expr = IntegerLiteral()
-   | expr = BooleanLiteral())
- { return expr; }
-}
-
-ExprAst IntegerLiteral() :
-{}
-{
-  <INTEGER_LITERAL> { return IntLit.create(Integer.parseInt(token.image)); }
-}
-
-ExprAst BooleanLiteral() :
-{
-  ExprAst boolLit;
-}
-{
-  (<TRUE>  { boolLit = BoolLit.create(true); }
-   | <FALSE> { boolLit = BoolLit.create(false); })
- { return boolLit; }
+  | unary = UnaryOperator()
+    {
+      m_operators.push(unary);
+    }
+    P()
+  | <IF> condExpr = Expr() <THEN> thenExpr = Expr() <ELSE> elseExpr = Expr()
+    {
+      m_operands.push(IfExpr.create(condExpr, thenExpr, elseExpr));
+    }
+  | <LET> letBindings = CompilationUnitAux() <IN> letExpr = Expr() <END>
+    {
+      m_operands.push(LetExpr.create(letBindings, letExpr));
+    }
 }
 
 Operator BinaryOperator() :
@@ -359,8 +405,8 @@ Operator BinaryOperator() :
   Operator oper;
 }
 {
-  (<SC_OR>  { oper = Operator.OR; }
-   | <SC_AND> { oper = Operator.AND; }
+  (<OR>  { oper = Operator.OR; }
+   | <AND> { oper = Operator.AND; }
 
    | <LT>     { oper = Operator.LT; }
    | <GT>     { oper = Operator.GT; }

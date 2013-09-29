@@ -50,6 +50,7 @@ public class EagleML {
     }
     catch (ParseException e) {
       System.out.println("Java Parser Version 1.0.2:  Encountered errors during parse.");
+      System.out.println(e.toString());
     }
   }
 }
