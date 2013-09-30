@@ -1,9 +1,9 @@
 /build/
 /dist/
-/src/eagleml/Token.java
-/src/eagleml/JavaCharStream.java
-/src/eagleml/TokenMgrError.java
-/src/eagleml/ParseException.java
-/src/eagleml/EagleMLParserConstants.java
-/src/eagleml/EagleMLParserTokenManager.java
-/src/eagleml/EagleMLParser.java
+/src/eagleml/frontEnd/Token.java
+/src/eagleml/frontEnd/JavaCharStream.java
+/src/eagleml/frontEnd/TokenMgrError.java
+/src/eagleml/frontEnd/ParseException.java
+/src/eagleml/frontEnd/EagleMLParserConstants.java
+/src/eagleml/frontEnd/EagleMLParserTokenManager.java
+/src/eagleml/frontEnd/EagleMLParser.java
