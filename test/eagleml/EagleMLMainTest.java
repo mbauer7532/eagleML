@@ -41,19 +41,16 @@ public class EagleMLMainTest {
    */
   @Test
   public void testPerformParse1() {
-    System.out.println("\nperformParse1:");
-    System.out.println("==============");
+    TestUtils.printTestHeader("performParse1");
     String[] args = {"test1.eagleML" };
     EagleMLMain.performParse(args);
   }
 
   @Test
   public void testPerformParse2() {
-    System.out.println("\nperformParse2:");
-    System.out.println("==============");
+    TestUtils.printTestHeader("performParse2");
 
     String[] args = {"test2.eagleML" };
     EagleMLMain.performParse(args);
   }
-
 }
