@@ -5,10 +5,10 @@ options {
 
 PARSER_BEGIN(EagleMLParser)
 
-package eagleml;
+package eagleml.frontEnd;
 
-import eagleml.EagleMLAst.*;
-import eagleml.Types.EagleMLTypes.*;
+import eagleml.ast.EagleMLAst.*;
+import eagleml.types.EagleMLTypes.*;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -359,32 +359,30 @@ void P() :
   ExprAst condExpr, thenExpr, elseExpr;
   List<Def> letBindings;
   ExprAst letExpr;
+  ExprAst expr;
+  List<ExprAst> exprList = null;
+  String name;
 }
 {
-  <LPAREN>
+  <LPAREN> expr = Expr() <RPAREN>
   {
-    m_operators.push(Operator.NO_OPPER);
-  }
-  Expr()
-  <RPAREN>
-  {
-    m_operators.pop();
+    m_operands.push(expr);
   }
   | <INTEGER_LITERAL>
     {
       m_operands.push(IntLit.create(Integer.parseInt(token.image)));
     }
   | <TRUE>
-     {
-       m_operands.push(BoolLit.create(true));
-     }
-  | <FALSE>
-     {
-       m_operands.push(BoolLit.create(false));
-     }
-  | <IDENTIFIER>
     {
-      m_operands.push(VarRef.create(token.image));
+      m_operands.push(BoolLit.create(true));
+    }
+  | <FALSE>
+    {
+      m_operands.push(BoolLit.create(false));
+    }
+  | <IDENTIFIER> { name = token.image; } [<LPAREN> exprList = ExprList() <RPAREN>]
+    {
+      m_operands.push(exprList == null ? VarRef.create(name) : FunCall.create(name, exprList));
     }
   | unary = UnaryOperator()
     {
@@ -399,6 +397,18 @@ void P() :
     {
       m_operands.push(LetExpr.create(letBindings, letExpr));
     }
+}
+
+List<ExprAst> ExprList() :
+{
+  List<ExprAst> exprList = new ExprList();
+  ExprAst expr;
+}
+{
+  [expr = Expr() { exprList.add(expr); } (<COMMA> expr = Expr() { exprList.add(expr); })*]
+  {
+    return exprList;
+  }
 }
 
 Operator BinaryOperator() :

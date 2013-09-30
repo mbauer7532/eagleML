@@ -11,7 +11,7 @@
     <description>Builds, tests, and runs the project eagleML.</description>
     <import file="nbproject/build-impl.xml"/>
     <javacc
-        target="src/eagleml/EagleMLParser.jj"
+        target="src/eagleml/FrontEnd/EagleMLParser.jj"
         javacchome="D:\\javacc-6.0"
     />
     <!--

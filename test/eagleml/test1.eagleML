@@ -1,1 +1,1 @@
-val zz:int = if 3 > 2 || 5*3 > 2*7 && b then 1 else let val x:int = 1 in x/2 end
+def fact(n: int): int = if (n == 0) then 1 else let val m: int = fact(n-1,zz+2*3) in n * m end

@@ -15,9 +15,9 @@ import static org.junit.Assert.*;
  *
  * @author Neo
  */
-public class EagleMLTest {
+public class EagleMLMainTest {
 
-  public EagleMLTest() {
+  public EagleMLMainTest() {
   }
 
   @BeforeClass
@@ -37,22 +37,23 @@ public class EagleMLTest {
   }
 
   /**
-   * Test of main method, of class EagleML.
+   * Test of main method, of class EagleMLMain.
    */
   @Test
-  public void testPerformParse() {
-    System.out.println("\nperformParse1");
+  public void testPerformParse1() {
+    System.out.println("\nperformParse1:");
     System.out.println("==============");
     String[] args = {"test1.eagleML" };
-    EagleML.performParse(args);
+    EagleMLMain.performParse(args);
   }
 
   @Test
   public void testPerformParse2() {
-    System.out.println("\nperformParse2");
+    System.out.println("\nperformParse2:");
     System.out.println("==============");
 
     String[] args = {"test2.eagleML" };
-    EagleML.performParse(args);
+    EagleMLMain.performParse(args);
   }
+
 }

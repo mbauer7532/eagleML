@@ -2,9 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package eagleml;
+package eagleml.ast;
 
-import eagleml.Types.EagleMLTypes.EagleMLType;
+import eagleml.types.EagleMLTypes.EagleMLType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -73,7 +73,7 @@ final public class EagleMLAst {
     @Override
     final public String toString() { return m_name; }
 
-    boolean greaterPrecedence(final Operator op1) {
+    public boolean greaterPrecedence(final Operator op1) {
       if (isBinary() && op1.isBinary())
       {
         final int prec0 = getPrecedence();
@@ -133,6 +133,13 @@ final public class EagleMLAst {
   }
 
   static public class ExprAst {}
+
+  final static public class ExprList extends ArrayList<ExprAst> {
+    @Override
+    final public String toString() {
+      return String.format("(%s)", stream().map(d -> String.valueOf(d)).collect(Collectors.joining(", ")));
+    }
+  }
 
   final static public class IntLit extends ExprAst {
     public static IntLit create(final int val) {
@@ -263,9 +270,7 @@ final public class EagleMLAst {
 
     @Override
     public String toString() {
-      return String.format("(let %s in %s end)",
-                           mLetBindings.toString(),
-                           mLetExpr.toString());
+      return String.format("(let %s in %s end)", mLetBindings.toString(), mLetExpr.toString());
     }
 
     private LetExpr(final List<Def> letBindings, final ExprAst letExpr) {
@@ -275,6 +280,25 @@ final public class EagleMLAst {
 
     private final List<Def> mLetBindings;
     private final ExprAst mLetExpr;
+  }
+
+  final static public class FunCall extends ExprAst {
+    static public FunCall create(final String funName, final List<ExprAst> exprList) {
+      return new FunCall(funName, exprList);
+    }
+
+    @Override
+    public String toString() {
+      return String.format("(%s %s)", mFunName, mExprList.toString());
+    }
+
+    private FunCall(final String funName, final List<ExprAst> exprList) {
+      mFunName = funName;
+      mExprList = exprList;
+    }
+
+    private final String mFunName;
+    private final List<ExprAst> mExprList;
   }
 
   static public class Def {}

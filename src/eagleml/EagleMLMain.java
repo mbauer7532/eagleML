@@ -4,13 +4,16 @@
  */
 package eagleml;
 
+import eagleml.ast.EagleMLAst;
+import eagleml.frontEnd.EagleMLParser;
+import eagleml.frontEnd.ParseException;
 import java.util.List;
 
 /**
  *
  * @author Neo
  */
-public class EagleML {
+public class EagleMLMain {
 
     /**
      * @param args the command line arguments
