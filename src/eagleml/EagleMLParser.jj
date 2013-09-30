@@ -7,12 +7,13 @@ PARSER_BEGIN(EagleMLParser)
 
 package eagleml;
 
+import eagleml.EagleMLAst.*;
+import eagleml.Types.EagleMLTypes.*;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.ArrayDeque;
-import eagleml.EagleMLAst.*;
-import static eagleml.EagleMLAst.*;
 
 final public class EagleMLParser {
   public void initExpressionStacks() {
@@ -220,7 +221,7 @@ TOKEN : /* OPERATORS */
 
 List<Def> CompilationUnit() :
 {
-  List<Def> defList = new ArrayList<Def>();
+  List<Def> defList;
 }
 {
   defList = CompilationUnitAux() <EOF>
@@ -231,7 +232,7 @@ List<Def> CompilationUnit() :
 
 List<Def> CompilationUnitAux() :
 {
-  List<Def> defList = new ArrayList<Def>();
+  List<Def> defList = new DefinitionList();
   Def def;
 }
 {
@@ -279,7 +280,7 @@ FunDef FunctionDefinition() :
 List<TypedVar> FunArgs() :
 {
   TypedVar typedVar;
-  List<TypedVar> typedVars = new ArrayList<TypedVar>();
+  List<TypedVar> typedVars = new TypedVarList();
 }
 {
   [ typedVar = FormalParameter() { typedVars.add(typedVar); }

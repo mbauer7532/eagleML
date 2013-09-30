@@ -4,7 +4,10 @@
  */
 package eagleml;
 
+import eagleml.Types.EagleMLTypes.EagleMLType;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -96,30 +99,11 @@ final public class EagleMLAst {
     }
   }
 
-  static public class EagleMLType {}
-
-  static public class IntPrimitiveType extends EagleMLType {
-    static public IntPrimitiveType create() {
-      return sIntPrimitiveType;
+  final static public class DefinitionList extends ArrayList<Def> {
+    @Override
+    final public String toString() {
+      return String.format("(%s)", stream().map(d -> String.valueOf(d)).collect(Collectors.joining("\n")));
     }
-
-    public String toString() {
-      return "int";
-    }
-
-    static private IntPrimitiveType sIntPrimitiveType = new IntPrimitiveType();
-  }
-
-  static public class BoolPrimitiveType extends EagleMLType {
-    static public BoolPrimitiveType create() {
-      return sBoolPrimitiveType;
-    }
-
-    public String toString() {
-      return "bool";
-    }
-
-    static private BoolPrimitiveType sBoolPrimitiveType = new BoolPrimitiveType();
   }
 
   final static public class TypedVar {
@@ -127,6 +111,7 @@ final public class EagleMLAst {
       return new TypedVar(varName, varType);
     }
 
+    @Override
     public String toString() {
       return String.format("%s: %s", mVarName, mVarType.toString());
     }
@@ -138,6 +123,13 @@ final public class EagleMLAst {
 
     private final String mVarName;
     private final EagleMLType mVarType;
+  }
+
+  final static public class TypedVarList extends ArrayList<TypedVar> {
+    @Override
+    final public String toString() {
+      return String.format("(%s)", this.stream().map(d -> String.valueOf(d)).collect(Collectors.joining(", ")));
+    }
   }
 
   static public class ExprAst {}
@@ -330,12 +322,7 @@ final public class EagleMLAst {
 
     @Override
     public String toString() {
-      final String template = "val %s: %s = %s";
-      final String varName = mVarName;
-      final String varType = mVarType.toString();
-      final String expr = mExpr.toString();
-
-      return String.format(template, varName, varType, expr);
+      return String.format("val %s: %s = %s", mVarName, mVarType.toString(), mExpr.toString());
     }
 
     private VarDef(final String varName,

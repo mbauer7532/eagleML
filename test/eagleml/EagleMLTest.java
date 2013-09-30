@@ -41,8 +41,15 @@ public class EagleMLTest {
    */
   @Test
   public void testPerformParse() {
-    System.out.println("performParse");
+    System.out.println("performParse1");
     String[] args = {"test1.eagleML" };
+    EagleML.performParse(args);
+  }
+
+  @Test
+  public void testPerformParse2() {
+    System.out.println("performParse2");
+    String[] args = {"test2.eagleML" };
     EagleML.performParse(args);
   }
 }
