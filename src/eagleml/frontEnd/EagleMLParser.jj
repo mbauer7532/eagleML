@@ -359,30 +359,29 @@ void P() :
   ExprAst condExpr, thenExpr, elseExpr;
   List<Def> letBindings;
   ExprAst letExpr;
-  ExprAst expr;
+  ExprAst expr = null;
   List<ExprAst> exprList = null;
   String name;
 }
 {
-  <LPAREN> expr = Expr() <RPAREN>
-  {
-    m_operands.push(expr);
-  }
+ (<LPAREN> expr = Expr() <RPAREN>
   | <INTEGER_LITERAL>
     {
-      m_operands.push(IntLit.create(Integer.parseInt(token.image)));
+      expr = IntLit.create(Integer.parseInt(token.image));
     }
   | <TRUE>
     {
-      m_operands.push(BoolLit.create(true));
+      expr = BoolLit.create(true);
     }
   | <FALSE>
     {
-      m_operands.push(BoolLit.create(false));
+      expr = BoolLit.create(false);
     }
   | <IDENTIFIER> { name = token.image; } [<LPAREN> exprList = ExprList() <RPAREN>]
     {
-      m_operands.push(exprList == null ? VarRef.create(name) : FunCall.create(name, exprList));
+      expr = exprList == null
+             ? VarRef.create(name)
+             : FunCall.create(name, exprList);
     }
   | unary = UnaryOperator()
     {
@@ -391,12 +390,18 @@ void P() :
     P()
   | <IF> condExpr = Expr() <THEN> thenExpr = Expr() <ELSE> elseExpr = Expr()
     {
-      m_operands.push(IfExpr.create(condExpr, thenExpr, elseExpr));
+      expr = IfExpr.create(condExpr, thenExpr, elseExpr);
     }
   | <LET> letBindings = CompilationUnitAux() <IN> letExpr = Expr() <END>
     {
-      m_operands.push(LetExpr.create(letBindings, letExpr));
+      expr = LetExpr.create(letBindings, letExpr);
+    })
+  {
+    if (expr != null)
+    {
+      m_operands.push(expr);
     }
+  }
 }
 
 List<ExprAst> ExprList() :
@@ -405,7 +410,8 @@ List<ExprAst> ExprList() :
   ExprAst expr;
 }
 {
-  [expr = Expr() { exprList.add(expr); } (<COMMA> expr = Expr() { exprList.add(expr); })*]
+  [expr = Expr() { exprList.add(expr); }
+   (<COMMA> expr = Expr() { exprList.add(expr); })*]
   {
     return exprList;
   }

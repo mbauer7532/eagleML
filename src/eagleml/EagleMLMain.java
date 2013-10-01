@@ -8,6 +8,7 @@ import eagleml.ast.EagleMLAst;
 import eagleml.frontEnd.EagleMLParser;
 import eagleml.frontEnd.ParseException;
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  *
@@ -15,12 +16,19 @@ import java.util.List;
  */
 public class EagleMLMain {
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-      performParse(args);
-    }
+  public static void parallelTest() {
+    int x = IntStream.range(0, 1600000000).parallel().filter(n -> n % 2 == 0).map(n -> n % 10).sum();
+
+    System.out.println(x);
+  }
+
+  /**
+   * @param args the command line arguments
+   */
+  public static void main(String[] args) {
+    parallelTest();
+    //performParse(args);
+  }
 
   public static void performParse(String[] args) {
     EagleMLParser parser;
