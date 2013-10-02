@@ -4,14 +4,14 @@
  * and open the template in the editor.
  */
 
-package eagleml.types;
+package eagleml.ast;
 
 /**
  *
  * @author Neo
  */
 public class EagleMLTypes {
-  static public class EagleMLType {}
+  static abstract public class EagleMLType implements AstElement {}
 
   static public class IntPrimitiveType extends EagleMLType {
     static public IntPrimitiveType create() {
@@ -21,6 +21,11 @@ public class EagleMLTypes {
     @Override
     public String toString() {
       return "int";
+    }
+
+    @Override
+    public void accept(final AstVisitor v) {
+      v.visit(this);
     }
 
     private static final IntPrimitiveType sIntPrimitiveType = new IntPrimitiveType();
@@ -34,6 +39,11 @@ public class EagleMLTypes {
     @Override
     public String toString() {
       return "bool";
+    }
+
+    @Override
+    public void accept(final AstVisitor v) {
+      v.visit(this);
     }
 
     private static final BoolPrimitiveType sBoolPrimitiveType = new BoolPrimitiveType();

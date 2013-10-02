@@ -4,7 +4,8 @@
  */
 package eagleml.ast;
 
-import eagleml.types.EagleMLTypes.EagleMLType;
+import eagleml.ast.Operators.Operator;
+import eagleml.ast.EagleMLTypes.EagleMLType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,99 +15,19 @@ import java.util.stream.Collectors;
  * @author Neo
  */
 final public class EagleMLAst {
-  static public enum OperAssociativity {
-    LEFT,
-    RIGHT,
-    NOASSOC
-  }
-
-  static public enum Arity {
-    UNARY,
-    BINARY,
-    NO_ARITY
-  }
-
-  static public enum Operator {
-    OR       (0,  OperAssociativity.LEFT,    "||", Arity.BINARY),
-    AND      (1,  OperAssociativity.LEFT,    "&&", Arity.BINARY),
-
-    LT       (2,  OperAssociativity.NOASSOC, "<", Arity.BINARY),
-    GT       (2,  OperAssociativity.NOASSOC, ">", Arity.BINARY),
-    LEQ      (2,  OperAssociativity.NOASSOC, "<=", Arity.BINARY),
-    GEQ      (2,  OperAssociativity.NOASSOC, ">=", Arity.BINARY),
-    EQ       (2,  OperAssociativity.NOASSOC, "==", Arity.BINARY),
-    NEQ      (2,  OperAssociativity.NOASSOC, "!=", Arity.BINARY),
-
-    PLUS     (3,  OperAssociativity.LEFT,    "+", Arity.BINARY),
-    MINUS    (3,  OperAssociativity.LEFT,    "-", Arity.BINARY),
-    TIMES    (4,  OperAssociativity.LEFT,    "*", Arity.BINARY),
-    DIVIDE   (4,  OperAssociativity.LEFT,    "/", Arity.BINARY),
-    REM      (4,  OperAssociativity.LEFT,    "%", Arity.BINARY),
-    XOR      (5,  OperAssociativity.LEFT,    "^", Arity.BINARY),
-
-    UMINUS   (6,  OperAssociativity.RIGHT,   "u-", Arity.UNARY),
-    UPLUS    (6,  OperAssociativity.RIGHT,   "u+", Arity.UNARY),
-
-    NO_OPPER (-1, OperAssociativity.NOASSOC, "NO_OPPER", Arity.NO_ARITY);
-
-    final private int m_precedence;
-    final private OperAssociativity m_associativity;
-    final String m_name;
-    final Arity m_arity;
-
-    private Operator(final int precedence,
-                     final OperAssociativity associativity,
-                     final String name,
-                     final Arity arity) {
-      m_precedence = precedence;
-      m_associativity = associativity;
-      m_name = name;
-      m_arity = arity;
-    }
-
-    public int getPrecedence() { return m_precedence; }
-    public OperAssociativity getAssociativity() { return m_associativity; }
-    public boolean isBinary() { return m_arity == Arity.BINARY; }
-    public boolean isUnary()  { return m_arity == Arity.UNARY; }
-    public boolean isNoOper() { return this == NO_OPPER; }
-
-    @Override
-    final public String toString() { return m_name; }
-
-    public boolean greaterPrecedence(final Operator op1) {
-      if (isBinary() && op1.isBinary())
-      {
-        final int prec0 = getPrecedence();
-        final int prec1 = op1.getPrecedence();
-
-        return prec0 > prec1 || (prec1 == prec0 && getAssociativity() == OperAssociativity.LEFT);
-      }
-      else if (isUnary() && op1.isBinary())
-      {
-        return getPrecedence() >= op1.getPrecedence();
-      }
-      else if (op1.isUnary())
-      {
-        return false;
-      }
-      else if (isNoOper())
-      {
-        return false;
-      }
-      else {
-        throw new RuntimeException("Bad operator comparison.");
-      }
-    }
-  }
-
-  final static public class DefinitionList extends ArrayList<Def> {
+  final static public class DefinitionList extends ArrayList<Def>  implements AstElement {
     @Override
     final public String toString() {
       return String.format("(%s)", stream().map(d -> String.valueOf(d)).collect(Collectors.joining("\n")));
     }
+
+    @Override
+    public void accept(final AstVisitor v) {
+      v.visit(this);
+    }
   }
 
-  final static public class TypedVar {
+  final static public class TypedVar implements AstElement {
     static public TypedVar create(final String varName, final EagleMLType varType) {
       return new TypedVar(varName, varType);
     }
@@ -114,6 +35,11 @@ final public class EagleMLAst {
     @Override
     public String toString() {
       return String.format("%s: %s", mVarName, mVarType.toString());
+    }
+
+    @Override
+    public void accept(final AstVisitor v) {
+      v.visit(this);
     }
 
     private TypedVar(final String varName, final EagleMLType varType) {
@@ -125,19 +51,29 @@ final public class EagleMLAst {
     private final EagleMLType mVarType;
   }
 
-  final static public class TypedVarList extends ArrayList<TypedVar> {
+  final static public class TypedVarList extends ArrayList<TypedVar> implements AstElement {
     @Override
     final public String toString() {
       return String.format("(%s)", this.stream().map(d -> String.valueOf(d)).collect(Collectors.joining(", ")));
     }
-  }
 
-  static public class ExprAst {}
+    @Override
+    public void accept(final AstVisitor v) {
+      v.visit(this);
+    }
+}
 
-  final static public class ExprList extends ArrayList<ExprAst> {
+  static abstract public class ExprAst implements AstElement {}
+
+  final static public class ExprList extends ArrayList<ExprAst> implements AstElement {
     @Override
     final public String toString() {
       return String.format("(%s)", stream().map(d -> String.valueOf(d)).collect(Collectors.joining(", ")));
+    }
+
+    @Override
+    public void accept(final AstVisitor v) {
+      v.visit(this);
     }
   }
 
@@ -151,11 +87,16 @@ final public class EagleMLAst {
       return Integer.toString(m_val);
     }
 
+    @Override
+    public void accept(final AstVisitor v) {
+      v.visit(this);
+    }
+
     private IntLit(final int val) {
       m_val = val;
     }
 
-    private final int m_val;
+    protected final int m_val;
   }
 
   final static public class BoolLit extends ExprAst {
@@ -169,10 +110,15 @@ final public class EagleMLAst {
 
     @Override
     public String toString() {
-      return m_val ? "true" : "else";
+      return m_val ? "true" : "false";
     }
 
-    private final boolean m_val;
+    @Override
+    public void accept(final AstVisitor v) {
+      v.visit(this);
+    }
+
+    protected final boolean m_val;
 
     private static final BoolLit sBoolTrue  = new BoolLit(true);
     private static final BoolLit sBoolFalse = new BoolLit(false);
@@ -188,11 +134,16 @@ final public class EagleMLAst {
       return mVarName;
     }
 
+    @Override
+    public void accept(final AstVisitor v) {
+      v.visit(this);
+    }
+
     private VarRef(final String varName) {
       mVarName = varName;
     }
 
-    private final String mVarName;
+    protected final String mVarName;
   }
 
   final static public class UnaryOper extends ExprAst {
@@ -205,13 +156,18 @@ final public class EagleMLAst {
       return String.format("(%s %s)", mOper.toString(), mArg0.toString());
     }
 
+    @Override
+    public void accept(final AstVisitor v) {
+      v.visit(this);
+    }
+
     private UnaryOper(final Operator oper, final ExprAst arg0) {
       mOper = oper;
       mArg0 = arg0;
     }
 
-    private final Operator mOper;
-    private final ExprAst mArg0;
+    protected final Operator mOper;
+    protected final ExprAst mArg0;
   }
 
   final static public class BinOper extends ExprAst {
@@ -224,15 +180,20 @@ final public class EagleMLAst {
       return String.format("(%s %s %s)", mOper.toString(), mArg0.toString(), mArg1.toString());
     }
 
+    @Override
+    public void accept(final AstVisitor v) {
+      v.visit(this);
+    }
+
     private BinOper(final Operator oper, final ExprAst arg0, final ExprAst arg1) {
       mOper = oper;
       mArg0 = arg0;
       mArg1 = arg1;
     }
 
-    private final Operator mOper;
-    private final ExprAst mArg0;
-    private final ExprAst mArg1;
+    protected final Operator mOper;
+    protected final ExprAst mArg0;
+    protected final ExprAst mArg1;
   }
 
   final static public class IfExpr extends ExprAst {
@@ -250,6 +211,11 @@ final public class EagleMLAst {
                            mElseExpr.toString());
     }
 
+    @Override
+    public void accept(final AstVisitor v) {
+      v.visit(this);
+    }
+
     private IfExpr(final ExprAst condExpr,
                    final ExprAst thenExpr,
                    final ExprAst elseExpr) {
@@ -258,9 +224,9 @@ final public class EagleMLAst {
       mElseExpr = elseExpr;
     }
 
-    private final ExprAst mCondExpr;
-    private final ExprAst mThenExpr;
-    private final ExprAst mElseExpr;
+    protected final ExprAst mCondExpr;
+    protected final ExprAst mThenExpr;
+    protected final ExprAst mElseExpr;
   }
 
   final static public class LetExpr extends ExprAst {
@@ -273,13 +239,18 @@ final public class EagleMLAst {
       return String.format("(let %s in %s end)", mLetBindings.toString(), mLetExpr.toString());
     }
 
+    @Override
+    public void accept(final AstVisitor v) {
+      v.visit(this);
+    }
+
     private LetExpr(final List<Def> letBindings, final ExprAst letExpr) {
       mLetBindings = letBindings;
       mLetExpr = letExpr;
     }
 
-    private final List<Def> mLetBindings;
-    private final ExprAst mLetExpr;
+    protected final List<Def> mLetBindings;
+    protected final ExprAst mLetExpr;
   }
 
   final static public class FunCall extends ExprAst {
@@ -292,21 +263,26 @@ final public class EagleMLAst {
       return String.format("(%s %s)", mFunName, mExprList.toString());
     }
 
+    @Override
+    public void accept(final AstVisitor v) {
+      v.visit(this);
+    }
+
     private FunCall(final String funName, final List<ExprAst> exprList) {
       mFunName = funName;
       mExprList = exprList;
     }
 
-    private final String mFunName;
-    private final List<ExprAst> mExprList;
+    protected final String mFunName;
+    protected final List<ExprAst> mExprList;
   }
 
-  static public class Def {}
+  static abstract public class Def implements AstElement {}
 
   final static public class FunDef extends Def
   {
     static public FunDef create(final String funName,
-                                final List<TypedVar> tyVars,
+                                final TypedVarList tyVars,
                                 final EagleMLType funType,
                                 final ExprAst expr) {
       return new FunDef(funName, tyVars, funType, expr);
@@ -321,8 +297,13 @@ final public class EagleMLAst {
                            mFunBody.toString());
     }
 
+    @Override
+    public void accept(final AstVisitor v) {
+      v.visit(this);
+    }
+
     private FunDef(final String funName,
-                   final List<TypedVar> tyVars,
+                   final TypedVarList tyVars,
                    final EagleMLType funType,
                    final ExprAst expr) {
       mFunName = funName;
@@ -331,10 +312,10 @@ final public class EagleMLAst {
       mFunBody = expr;
     }
 
-    private final String mFunName;
-    private final List<TypedVar> mTyVars;
-    private final EagleMLType mFunType;
-    private final ExprAst mFunBody;
+    protected final String mFunName;
+    protected final TypedVarList mTyVars;
+    protected final EagleMLType mFunType;
+    protected final ExprAst mFunBody;
   }
 
   final static public class VarDef extends Def {
@@ -349,6 +330,11 @@ final public class EagleMLAst {
       return String.format("val %s: %s = %s", mVarName, mVarType.toString(), mExpr.toString());
     }
 
+    @Override
+    public void accept(final AstVisitor v) {
+      v.visit(this);
+    }
+
     private VarDef(final String varName,
                    final EagleMLType varType,
                    final ExprAst expr) {
@@ -357,8 +343,8 @@ final public class EagleMLAst {
       mExpr = expr;
     }
 
-    private final String mVarName;
-    private final EagleMLType mVarType;
-    private final ExprAst mExpr;
+    protected final String mVarName;
+    protected final EagleMLType mVarType;
+    protected final ExprAst mExpr;
   }
 }

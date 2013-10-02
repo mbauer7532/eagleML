@@ -258,7 +258,7 @@ VarDef VariableDefinition() :
 FunDef FunctionDefinition() :
 {
    String funName;
-   List<TypedVar> tyVars;
+   TypedVarList tyVars;
    ExprAst expr;
    EagleMLType funType = null;
 }
@@ -277,10 +277,10 @@ FunDef FunctionDefinition() :
     }
 }
 
-List<TypedVar> FunArgs() :
+TypedVarList FunArgs() :
 {
   TypedVar typedVar;
-  List<TypedVar> typedVars = new TypedVarList();
+  TypedVarList typedVars = new TypedVarList();
 }
 {
   [ typedVar = FormalParameter() { typedVars.add(typedVar); }
