@@ -42,7 +42,7 @@ public class EagleMLMainTest {
   @Test
   public void testPerformParse1() {
     TestUtils.printTestHeader("performParse1");
-    String[] args = {"test1.eagleML" };
+    String[] args = {"test1.eagleML"};
     EagleMLMain.performParse(args);
   }
 
@@ -50,7 +50,7 @@ public class EagleMLMainTest {
   public void testPerformParse2() {
     TestUtils.printTestHeader("performParse2");
 
-    String[] args = {"test2.eagleML" };
+    String[] args = {"test2.eagleML"};
     EagleMLMain.performParse(args);
   }
 }

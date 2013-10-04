@@ -14,11 +14,12 @@ import eagleml.ast.EagleMLTypes.*;
  * @author Neo
  */
 public interface AstVisitor {
-  public void visit(DefinitionList defList);
-  public void visit(FunDef funDef);
-  public void visit(VarDef varDef);
+  public void visit(final DefinitionList defList);
+  public void visit(final FunDef funDef);
+  public void visit(final VarDef varDef);
 
-  public void visit(TypedVarList typedVarList);
+  public void visit(final TypedVarList typedVarList);
+  public void visit(final TypedVar typedVar);
   public void visit(final ExprList exprList);
 
   public void visit(final IntLit intLit);

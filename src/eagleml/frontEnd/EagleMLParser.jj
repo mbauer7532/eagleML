@@ -8,10 +8,10 @@ PARSER_BEGIN(EagleMLParser)
 package eagleml.frontEnd;
 
 import eagleml.ast.EagleMLAst.*;
-import eagleml.types.EagleMLTypes.*;
+import eagleml.ast.EagleMLTypes.*;
+import eagleml.ast.Operators.Operator;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.ArrayDeque;
 
@@ -219,9 +219,9 @@ TOKEN : /* OPERATORS */
  * Program structuring syntax follows.
  */
 
-List<Def> CompilationUnit() :
+DefinitionList CompilationUnit() :
 {
-  List<Def> defList;
+  DefinitionList defList;
 }
 {
   defList = CompilationUnitAux() <EOF>
@@ -230,9 +230,9 @@ List<Def> CompilationUnit() :
   }
 }
 
-List<Def> CompilationUnitAux() :
+DefinitionList CompilationUnitAux() :
 {
-  List<Def> defList = new DefinitionList();
+  DefinitionList defList = new DefinitionList();
   Def def;
 }
 {
@@ -357,10 +357,10 @@ void P() :
 {
   Operator unary;
   ExprAst condExpr, thenExpr, elseExpr;
-  List<Def> letBindings;
+  DefinitionList letBindings;
   ExprAst letExpr;
   ExprAst expr = null;
-  List<ExprAst> exprList = null;
+  ExprList exprList = null;
   String name;
 }
 {
@@ -404,9 +404,9 @@ void P() :
   }
 }
 
-List<ExprAst> ExprList() :
+ExprList ExprList() :
 {
-  List<ExprAst> exprList = new ExprList();
+  ExprList exprList = new ExprList();
   ExprAst expr;
 }
 {

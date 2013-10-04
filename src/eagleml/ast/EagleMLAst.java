@@ -47,8 +47,8 @@ final public class EagleMLAst {
       mVarType = varType;
     }
 
-    private final String mVarName;
-    private final EagleMLType mVarType;
+    protected final String mVarName;
+    protected final EagleMLType mVarType;
   }
 
   final static public class TypedVarList extends ArrayList<TypedVar> implements AstElement {
@@ -230,7 +230,7 @@ final public class EagleMLAst {
   }
 
   final static public class LetExpr extends ExprAst {
-    static public LetExpr create(final List<Def> letBindings, final ExprAst letExpr) {
+    static public LetExpr create(final DefinitionList letBindings, final ExprAst letExpr) {
       return new LetExpr(letBindings, letExpr);
     }
 
@@ -244,17 +244,17 @@ final public class EagleMLAst {
       v.visit(this);
     }
 
-    private LetExpr(final List<Def> letBindings, final ExprAst letExpr) {
+    private LetExpr(final DefinitionList letBindings, final ExprAst letExpr) {
       mLetBindings = letBindings;
       mLetExpr = letExpr;
     }
 
-    protected final List<Def> mLetBindings;
+    protected final DefinitionList mLetBindings;
     protected final ExprAst mLetExpr;
   }
 
   final static public class FunCall extends ExprAst {
-    static public FunCall create(final String funName, final List<ExprAst> exprList) {
+    static public FunCall create(final String funName, final ExprList exprList) {
       return new FunCall(funName, exprList);
     }
 
@@ -268,13 +268,13 @@ final public class EagleMLAst {
       v.visit(this);
     }
 
-    private FunCall(final String funName, final List<ExprAst> exprList) {
+    private FunCall(final String funName, final ExprList exprList) {
       mFunName = funName;
       mExprList = exprList;
     }
 
     protected final String mFunName;
-    protected final List<ExprAst> mExprList;
+    protected final ExprList mExprList;
   }
 
   static abstract public class Def implements AstElement {}
@@ -282,17 +282,17 @@ final public class EagleMLAst {
   final static public class FunDef extends Def
   {
     static public FunDef create(final String funName,
-                                final TypedVarList tyVars,
+                                final TypedVarList typedVars,
                                 final EagleMLType funType,
                                 final ExprAst expr) {
-      return new FunDef(funName, tyVars, funType, expr);
+      return new FunDef(funName, typedVars, funType, expr);
     }
 
     @Override
     public String toString() {
       return String.format("(def %s%s: %s = %s)",
                            mFunName,
-                           mTyVars.toString(),
+                           mTypedVars.toString(),
                            mFunType.toString(),
                            mFunBody.toString());
     }
@@ -303,17 +303,17 @@ final public class EagleMLAst {
     }
 
     private FunDef(final String funName,
-                   final TypedVarList tyVars,
+                   final TypedVarList typedVars,
                    final EagleMLType funType,
                    final ExprAst expr) {
-      mFunName = funName;
-      mTyVars  = tyVars;
-      mFunType = funType;
-      mFunBody = expr;
+      mFunName    = funName;
+      mTypedVars  = typedVars;
+      mFunType    = funType;
+      mFunBody    = expr;
     }
 
     protected final String mFunName;
-    protected final TypedVarList mTyVars;
+    protected final TypedVarList mTypedVars;
     protected final EagleMLType mFunType;
     protected final ExprAst mFunBody;
   }

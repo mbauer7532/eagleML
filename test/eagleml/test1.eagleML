@@ -2,3 +2,10 @@ def fact(n: int): int = if (n == 0) then 1 else let val m: int = fact(n-1,zz+2*3
 
 val x:int = 1+-(1-2)
 
+def f(x: int):bool =
+  let
+    val z: bool = true && false || true
+    val c: bool = true || false && true
+  in
+    z && c || z && c
+  end

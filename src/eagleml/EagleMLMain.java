@@ -4,10 +4,11 @@
  */
 package eagleml;
 
-import eagleml.ast.EagleMLAst;
+import eagleml.ast.EagleMLAst.DefinitionList;
+import eagleml.ast.PrettyPrinter;
+import eagleml.ast.PrettyPrinter2;
 import eagleml.frontEnd.EagleMLParser;
 import eagleml.frontEnd.ParseException;
-import java.util.List;
 import java.util.stream.IntStream;
 
 /**
@@ -26,12 +27,14 @@ public class EagleMLMain {
    * @param args the command line arguments
    */
   public static void main(String[] args) {
-    parallelTest();
+    //parallelTest();
     //performParse(args);
   }
 
   public static void performParse(String[] args) {
     EagleMLParser parser;
+    PrettyPrinter pp = new PrettyPrinter();
+
     if (args.length == 0) {
       System.out.println("Java Parser Version 1.0.2:  Reading from standard input . . .");
       parser = new EagleMLParser(System.in);
@@ -55,9 +58,10 @@ public class EagleMLMain {
 
     try {
       parser.initExpressionStacks();
-      List<EagleMLAst.Def> compUnit = parser.CompilationUnit();
+      DefinitionList compUnit = parser.CompilationUnit();
       System.out.println("Java Parser Version 1.0.2:  Java program parsed successfully.");
-      System.out.println(compUnit);
+      //System.out.println(compUnit);
+      System.out.print(pp.printAst(compUnit));
     }
     catch (ParseException e) {
       System.out.println("Java Parser Version 1.0.2:  Encountered errors during parse.");
