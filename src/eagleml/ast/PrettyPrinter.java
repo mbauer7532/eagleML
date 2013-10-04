@@ -145,6 +145,17 @@ public class PrettyPrinter implements AstVisitor {
     mRes = "bool";
   }
 
+  @Override
+  public void visit(final FunType funType) {
+    funType.mt0.accept(this);
+    final String t0Str = mRes;
+
+    funType.mt1.accept(this);
+    final String t1Str = mRes;
+
+    mRes = String.format("(%s -> %s)", t0Str, t1Str);
+  }
+
   public PrettyPrinter()
   {
     mRes = "";

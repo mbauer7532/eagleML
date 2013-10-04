@@ -48,4 +48,23 @@ public class EagleMLTypes {
 
     private static final BoolPrimitiveType sBoolPrimitiveType = new BoolPrimitiveType();
   }
+
+  static public class FunType extends EagleMLType {
+    static public FunType create(final EagleMLType t0, final EagleMLType t1) {
+      return new FunType(t0, t1);
+    }
+
+    @Override
+    public void accept(AstVisitor v) {
+      v.visit(this);
+    }
+
+    public FunType(final EagleMLType t0, final EagleMLType t1) {
+      mt0 = t0;
+      mt1 = t1;
+    }
+
+    final protected EagleMLType mt0;
+    final protected EagleMLType mt1;
+  }
 }

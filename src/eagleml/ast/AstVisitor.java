@@ -35,4 +35,5 @@ public interface AstVisitor {
 
   public void visit(final IntPrimitiveType intTyp);
   public void visit(final BoolPrimitiveType boolTyp);
+  public void visit(final FunType boolTyp);
 }

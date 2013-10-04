@@ -163,6 +163,16 @@ public class PrettyPrinter2 implements AstVisitor {
     mb.append("bool");
   }
 
+  @Override
+  public void visit(final FunType funType) {
+    mb.append("(");
+    funType.mt0.accept(this);
+    mb.append(" -> ");
+    funType.mt1.accept(this);
+    mb.append(")");
+  }
+
+
   public PrettyPrinter2()
   {
     mb = new StringBuilder();
