@@ -8,8 +8,6 @@ package eagleml.ast;
 
 import eagleml.ast.EagleMLAst.*;
 import eagleml.ast.EagleMLTypes.*;
-import java.util.stream.Collectors;
-import java.util.ArrayList;
 
 /**
  *
