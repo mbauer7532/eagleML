@@ -5,11 +5,10 @@
 package eagleml;
 
 import eagleml.ast.EagleMLAst.DefinitionList;
-import eagleml.ast.PrettyPrinter;
+// import eagleml.ast.PrettyPrinter;
 import eagleml.ast.PrettyPrinter2;
 import eagleml.frontEnd.EagleMLParser;
 import eagleml.frontEnd.ParseException;
-import java.util.stream.IntStream;
 
 /**
  *
@@ -17,30 +16,23 @@ import java.util.stream.IntStream;
  */
 public class EagleMLMain {
 
-  public static void parallelTest() {
-    int x = IntStream.range(0, 1600000000).parallel().filter(n -> n % 2 == 0).map(n -> n % 10).sum();
-
-    System.out.println(x);
-  }
-
   /**
    * @param args the command line arguments
    */
   public static void main(String[] args) {
-    //parallelTest();
     //performParse(args);
   }
 
   public static void performParse(String[] args) {
     EagleMLParser parser;
-    PrettyPrinter pp = new PrettyPrinter();
+    PrettyPrinter2 pp = new PrettyPrinter2();
 
     if (args.length == 0) {
       System.out.println("Java Parser Version 1.0.2:  Reading from standard input . . .");
       parser = new EagleMLParser(System.in);
     }
     else if (args.length == 1) {
-      System.out.println("Java Parser Version 1.0.2:  Reading from file " + args[0] + " . . .");
+      System.out.println("Java Parser Version 1.0.2:  Reading from file " + args[0] + " ...");
       try {
         parser = new EagleMLParser(new java.io.FileInputStream(args[0]));
       } catch (java.io.FileNotFoundException e) {

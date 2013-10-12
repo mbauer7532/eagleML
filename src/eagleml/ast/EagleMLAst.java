@@ -7,7 +7,6 @@ package eagleml.ast;
 import eagleml.ast.Operators.Operator;
 import eagleml.ast.EagleMLTypes.EagleMLType;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -15,10 +14,14 @@ import java.util.stream.Collectors;
  * @author Neo
  */
 final public class EagleMLAst {
-  final static public class DefinitionList extends ArrayList<Def>  implements AstElement {
+  final static public class DefinitionList extends ArrayList<Def>
+                                           implements AstElement {
     @Override
     final public String toString() {
-      return String.format("(%s)", stream().map(d -> String.valueOf(d)).collect(Collectors.joining("\n")));
+      return String.format("(%s)",
+                           stream()
+                           .map(d -> String.valueOf(d))
+                           .collect(Collectors.joining("\n")));
     }
 
     @Override
@@ -28,7 +31,8 @@ final public class EagleMLAst {
   }
 
   final static public class TypedVar implements AstElement {
-    static public TypedVar create(final String varName, final EagleMLType varType) {
+    static public TypedVar create(final String varName,
+                                  final EagleMLType varType) {
       return new TypedVar(varName, varType);
     }
 
@@ -51,10 +55,14 @@ final public class EagleMLAst {
     protected final EagleMLType mVarType;
   }
 
-  final static public class TypedVarList extends ArrayList<TypedVar> implements AstElement {
+  final static public class TypedVarList extends ArrayList<TypedVar>
+                                         implements AstElement {
     @Override
     final public String toString() {
-      return String.format("(%s)", this.stream().map(d -> String.valueOf(d)).collect(Collectors.joining(", ")));
+      return String.format("(%s)",
+                           stream()
+                           .map(d -> String.valueOf(d))
+                           .collect(Collectors.joining(", ")));
     }
 
     @Override
@@ -63,12 +71,18 @@ final public class EagleMLAst {
     }
 }
 
-  static abstract public class ExprAst implements AstElement {}
+  static abstract public class ExprAst implements AstElement {
+    protected EagleMLType mExprType; // Populated by the typechecker later.
+  }
 
-  final static public class ExprList extends ArrayList<ExprAst> implements AstElement {
+  final static public class ExprList extends ArrayList<ExprAst>
+                                     implements AstElement {
     @Override
     final public String toString() {
-      return String.format("(%s)", stream().map(d -> String.valueOf(d)).collect(Collectors.joining(", ")));
+      return String.format("(%s)",
+                           stream()
+                           .map(d -> String.valueOf(d))
+                           .collect(Collectors.joining(", ")));
     }
 
     @Override
@@ -171,13 +185,18 @@ final public class EagleMLAst {
   }
 
   final static public class BinOper extends ExprAst {
-    static public BinOper create(final ExprAst arg0, final Operator oper, final ExprAst arg1) {
+    static public BinOper create(final ExprAst arg0,
+                                 final Operator oper,
+                                 final ExprAst arg1) {
       return new BinOper(oper, arg0, arg1);
     }
 
     @Override
     public String toString() {
-      return String.format("(%s %s %s)", mOper.toString(), mArg0.toString(), mArg1.toString());
+      return String.format("(%s %s %s)",
+                           mOper.toString(),
+                           mArg0.toString(),
+                           mArg1.toString());
     }
 
     @Override
@@ -185,7 +204,9 @@ final public class EagleMLAst {
       v.visit(this);
     }
 
-    private BinOper(final Operator oper, final ExprAst arg0, final ExprAst arg1) {
+    private BinOper(final Operator oper,
+                    final ExprAst arg0,
+                    final ExprAst arg1) {
       mOper = oper;
       mArg0 = arg0;
       mArg1 = arg1;
@@ -230,13 +251,16 @@ final public class EagleMLAst {
   }
 
   final static public class LetExpr extends ExprAst {
-    static public LetExpr create(final DefinitionList letBindings, final ExprAst letExpr) {
+    static public LetExpr create(final DefinitionList letBindings,
+                                 final ExprAst letExpr) {
       return new LetExpr(letBindings, letExpr);
     }
 
     @Override
     public String toString() {
-      return String.format("(let %s in %s end)", mLetBindings.toString(), mLetExpr.toString());
+      return String.format("(let %s in %s end)",
+                           mLetBindings.toString(),
+                           mLetExpr.toString());
     }
 
     @Override
@@ -244,7 +268,8 @@ final public class EagleMLAst {
       v.visit(this);
     }
 
-    private LetExpr(final DefinitionList letBindings, final ExprAst letExpr) {
+    private LetExpr(final DefinitionList letBindings,
+                    final ExprAst letExpr) {
       mLetBindings = letBindings;
       mLetExpr = letExpr;
     }
@@ -254,7 +279,8 @@ final public class EagleMLAst {
   }
 
   final static public class FunCall extends ExprAst {
-    static public FunCall create(final String funName, final ExprList exprList) {
+    static public FunCall create(final String funName,
+                                 final ExprList exprList) {
       return new FunCall(funName, exprList);
     }
 
@@ -306,10 +332,10 @@ final public class EagleMLAst {
                    final TypedVarList typedVars,
                    final EagleMLType funType,
                    final ExprAst expr) {
-      mFunName    = funName;
-      mTypedVars  = typedVars;
-      mFunType    = funType;
-      mFunBody    = expr;
+      mFunName   = funName;
+      mTypedVars = typedVars;
+      mFunType   = funType;
+      mFunBody   = expr;
     }
 
     protected final String mFunName;
@@ -327,7 +353,10 @@ final public class EagleMLAst {
 
     @Override
     public String toString() {
-      return String.format("val %s: %s = %s", mVarName, mVarType.toString(), mExpr.toString());
+      return String.format("val %s: %s = %s",
+                           mVarName,
+                           mVarType.toString(),
+                           mExpr.toString());
     }
 
     @Override

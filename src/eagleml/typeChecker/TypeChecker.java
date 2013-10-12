@@ -15,6 +15,19 @@ import eagleml.ast.EagleMLTypes;
  * @author Neo
  */
 public class TypeChecker implements AstVisitor {
+
+  public static class TypeCheckingContext {
+
+  }
+
+  public TypeCheckingContext tc(final DefinitionList defList) {
+    final TypeCheckingContext ctx = new TypeCheckingContext();
+
+    // blah blah blah visit this and that...
+
+    return ctx;
+  }
+
   @Override
   public void visit(final DefinitionList defList) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

@@ -66,7 +66,7 @@ public class PrettyPrinter2 implements AstVisitor {
     final int count = typedVarList.size();
     if (count > 0) {
       int i = 0;
-      for (; i != count - 1; ++i) {
+      for (int end = count - 1; i != end; ++i) {
         final TypedVar typedVar = typedVarList.get(i);
         typedVar.accept(this);
         mb.append(" ");
@@ -144,7 +144,7 @@ public class PrettyPrinter2 implements AstVisitor {
     final int count = exprList.size();
     if (count > 0) {
       int i = 0;
-      for (; i != count - 1; ++i) {
+      for (int end = count - 1; i != end; ++i) {
         final ExprAst expr = exprList.get(i);
         expr.accept(this);
         mb.append(" ");
@@ -178,5 +178,5 @@ public class PrettyPrinter2 implements AstVisitor {
     mb = new StringBuilder();
   }
 
-  private StringBuilder mb;
+  private final StringBuilder mb;
 }
