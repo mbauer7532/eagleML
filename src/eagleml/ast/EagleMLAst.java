@@ -46,6 +46,9 @@ final public class EagleMLAst {
       v.visit(this);
     }
 
+    public final String getVarName() { return mVarName; }
+    public final EagleMLType getVarType() { return mVarType; }
+
     private TypedVar(final String varName, final EagleMLType varType) {
       mVarName = varName;
       mVarType = varType;
@@ -106,6 +109,8 @@ final public class EagleMLAst {
       v.visit(this);
     }
 
+    public final int getVal() { return m_val; }
+
     private IntLit(final int val) {
       m_val = val;
     }
@@ -132,6 +137,8 @@ final public class EagleMLAst {
       v.visit(this);
     }
 
+    public final boolean getVal() { return m_val; }
+
     protected final boolean m_val;
 
     private static final BoolLit sBoolTrue  = new BoolLit(true);
@@ -152,6 +159,8 @@ final public class EagleMLAst {
     public void accept(final AstVisitor v) {
       v.visit(this);
     }
+
+    public final String getVarName() { return mVarName; }
 
     private VarRef(final String varName) {
       mVarName = varName;
@@ -174,6 +183,9 @@ final public class EagleMLAst {
     public void accept(final AstVisitor v) {
       v.visit(this);
     }
+
+    public final Operator getOperator() { return mOper; }
+    public final ExprAst getArg0()      { return mArg0; }
 
     private UnaryOper(final Operator oper, final ExprAst arg0) {
       mOper = oper;
@@ -203,6 +215,10 @@ final public class EagleMLAst {
     public void accept(final AstVisitor v) {
       v.visit(this);
     }
+
+    public final Operator getOperator() { return mOper; }
+    public final ExprAst getArg0()      { return mArg0; }
+    public final ExprAst getArg1()      { return mArg1; }
 
     private BinOper(final Operator oper,
                     final ExprAst arg0,
@@ -237,6 +253,10 @@ final public class EagleMLAst {
       v.visit(this);
     }
 
+    public final ExprAst getCondExpr() { return mCondExpr; }
+    public final ExprAst getThenExpr() { return mThenExpr; }
+    public final ExprAst getElseExpr() { return mElseExpr; }
+
     private IfExpr(final ExprAst condExpr,
                    final ExprAst thenExpr,
                    final ExprAst elseExpr) {
@@ -268,6 +288,9 @@ final public class EagleMLAst {
       v.visit(this);
     }
 
+    public final DefinitionList getDefinitionList() { return mLetBindings; }
+    public final ExprAst getLetExpr()               { return mLetExpr; }
+
     private LetExpr(final DefinitionList letBindings,
                     final ExprAst letExpr) {
       mLetBindings = letBindings;
@@ -293,6 +316,9 @@ final public class EagleMLAst {
     public void accept(final AstVisitor v) {
       v.visit(this);
     }
+
+    public final String getFunName()    { return mFunName; }
+    public final ExprList getExprList() { return mExprList; }
 
     private FunCall(final String funName, final ExprList exprList) {
       mFunName = funName;
@@ -327,6 +353,11 @@ final public class EagleMLAst {
     public void accept(final AstVisitor v) {
       v.visit(this);
     }
+
+    public final String getFunName()         { return mFunName; }
+    public final TypedVarList getTypedVars() { return mTypedVars; }
+    public final EagleMLType getFunType()    { return mFunType; }
+    public final ExprAst getFunBody()        { return mFunBody; }
 
     private FunDef(final String funName,
                    final TypedVarList typedVars,
@@ -363,6 +394,10 @@ final public class EagleMLAst {
     public void accept(final AstVisitor v) {
       v.visit(this);
     }
+
+    public final String getVarName()      { return mVarName; }
+    public final EagleMLType getVarType() { return mVarType; }
+    public final ExprAst getExpr()        { return mExpr; }
 
     private VarDef(final String varName,
                    final EagleMLType varType,
