@@ -16,31 +16,30 @@ import eagleml.ast.EagleMLTypes;
  */
 public class TypeChecker implements AstVisitor {
 
-  public static class TypeCheckingContext {
+  private final SymbolTable mSymTab;
 
+  public TypeChecker(final SymbolTable symTab) {
+    mSymTab = symTab;
   }
 
-  public TypeCheckingContext tc(final DefinitionList defList) {
-    final TypeCheckingContext ctx = new TypeCheckingContext();
-
-    // blah blah blah visit this and that...
-
-    return ctx;
+  public void tc(final DefinitionList defList) {
+    visit(defList);
   }
 
   @Override
   public void visit(final DefinitionList defList) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    defList.forEach(d -> d.accept(this));
   }
 
   @Override
   public void visit(final FunDef funDef) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    final String funName = funDef.getFunName();
+
   }
 
   @Override
   public void visit(final VarDef varDef) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
   }
 
   @Override
