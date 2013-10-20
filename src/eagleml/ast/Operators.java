@@ -91,7 +91,7 @@ public class Operators {
         return false;
       }
       else {
-        throw new RuntimeException("Bad operator comparison.");
+        throw new AssertionError("Bad operator comparison.");
       }
     }
   }

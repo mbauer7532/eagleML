@@ -8,7 +8,7 @@ package eagleml.typeChecker;
 
 import eagleml.ast.AstVisitor;
 import eagleml.ast.EagleMLAst.*;
-import eagleml.ast.EagleMLTypes;
+import eagleml.ast.EagleMLTypes.*;
 
 /**
  *
@@ -23,7 +23,7 @@ public class TypeChecker implements AstVisitor {
   }
 
   public void tc(final DefinitionList defList) {
-    visit(defList);
+    defList.accept(this);
   }
 
   @Override
@@ -34,7 +34,16 @@ public class TypeChecker implements AstVisitor {
   @Override
   public void visit(final FunDef funDef) {
     final String funName = funDef.getFunName();
+    final EagleMLType funType = funDef.getFunType();
+    final ExprAst expr = funDef.getFunBody();
 
+    // Add the function arguments to the symbol table
+    // Typecheck the body
+    expr.accept(this);
+    final EagleMLType derivedExprType = expr.getExprType();
+
+    // Remove the function arguments from the symbol table.
+    // (if only we had persistent data structures in java...
   }
 
   @Override
@@ -98,17 +107,17 @@ public class TypeChecker implements AstVisitor {
   }
 
   @Override
-  public void visit(final EagleMLTypes.IntPrimitiveType intTyp) {
+  public void visit(final IntPrimitiveType intTyp) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   @Override
-  public void visit(final EagleMLTypes.BoolPrimitiveType boolTyp) {
+  public void visit(final BoolPrimitiveType boolTyp) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   @Override
-  public void visit(final EagleMLTypes.FunType boolTyp) {
+  public void visit(final FunType boolTyp) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 }

@@ -76,6 +76,8 @@ final public class EagleMLAst {
 
   static abstract public class ExprAst implements AstElement {
     protected EagleMLType mExprType; // Populated by the typechecker later.
+
+    public EagleMLType getExprType() { return mExprType; }
   }
 
   final static public class ExprList extends ArrayList<ExprAst>

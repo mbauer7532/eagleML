@@ -38,7 +38,7 @@ final public class EagleMLParser {
     }
     else
     {
-      throw new RuntimeException("Bad operator.");
+      throw new AssertionError("Bad operator.");
     }
 
     return;
